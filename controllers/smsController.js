@@ -2,10 +2,9 @@ const axios = require('axios');
 const Message = require('../models/Message');
 const { getAccessToken } = require('../config/orangeAuth');
 
-const senderAddress = 'tel:+221783824355'; // juste un test pour le moment
- 
+const senderAddress = process.env.SENDER_ADDRESS;
 
-//ENVOI DE SMS
+// ENVOI DE SMS
 exports.sendSMS = async (req, res) => {
   const { phoneNumber, message } = req.body;
 
@@ -18,12 +17,11 @@ exports.sendSMS = async (req, res) => {
         outboundSMSMessageRequest: {
           address: `tel:${phoneNumber}`,
           senderAddress,
+          senderName: "ESMT", // Ajout ici
           outboundSMSTextMessage: {
             message
           },
-         
           notifyURL: process.env.NOTIFY_URL
-
         }
       },
       {
@@ -34,7 +32,6 @@ exports.sendSMS = async (req, res) => {
       }
     );
 
-    
     await Message.create({
       phoneNumber,
       message,
@@ -48,7 +45,7 @@ exports.sendSMS = async (req, res) => {
   }
 };
 
-
+// RÉCEPTION DE SMS
 exports.receiveSMS = async (req, res) => {
   try {
     const receivedData = req.body.inboundSMSMessageList.inboundSMSMessage;
@@ -68,7 +65,7 @@ exports.receiveSMS = async (req, res) => {
   }
 };
 
-
+// LISTER LES MESSAGES
 exports.getAllMessages = async (req, res) => {
   try {
     const messages = await Message.find().sort({ date: -1 });
